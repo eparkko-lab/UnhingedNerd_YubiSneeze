@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Generated game data (contains credentials - regenerate on server)
+game-data.json
+frontend-grid.json
+phrases.json
+
+# Logs
+*.log
+server.log
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+.tmp/
+temp/
+
+# AWS credentials (if you download SSH keys)
+*.pem
+LightsailDefaultKey.pem
+
+# Build output (if you add build steps later)
+dist/
+build/

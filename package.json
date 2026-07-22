@@ -1,0 +1,19 @@
+{
+  "name": "unhingednerd-yubikey-validator",
+  "version": "1.0.0",
+  "description": "YubiKey OTP validation server for word search game",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.js",
+    "lambda": "node src/lambda.js",
+    "generate-phrases": "node src/generate-phrases.js",
+    "generate-game": "node generate-game.js",
+    "reset": "bash reset-game.sh"
+  },
+  "keywords": ["yubikey", "otp", "modhex", "word-search", "game", "hackathon"],
+  "author": "UnhingedNerd",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
