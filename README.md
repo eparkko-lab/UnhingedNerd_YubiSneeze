@@ -24,10 +24,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 Feel free to fork, modify, and use for your own events! If you run this at your hackathon, we'd love to hear about it (but no obligation).
 
-## Credits
-
-Created for YubiKey hackathon events by UnhingedNerd.
-
 The game concept combines:
 - Word search puzzles with modhex constraints
 - YubiKey OTP programming
@@ -36,7 +32,7 @@ The game concept combines:
 
 ## Attribution (Optional but Appreciated)
 
-While not required by the MIT license, if you create your own version or run this at your event, a shout-out would be awesome! Tag @unhingednerd or link back to this repo.
+While not required by the MIT license, if you create your own version or run this at your event, a shout-out would be awesome link back to this repo.
 
 ## Setup
 
