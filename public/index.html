@@ -413,6 +413,7 @@
     let selectedCells = [];
     let currentSelection = null;
     let isMouseDown = false;
+    let mouseUpListenerAdded = false;
 
     // Load grid and phrases
     async function loadGame() {
@@ -450,6 +451,7 @@
     // Render grid
     function renderGrid(grid) {
       const gridEl = document.getElementById('grid');
+      gridEl.innerHTML = ''; // Clear previous grid to prevent memory leaks
       const cellSize = Math.max(30, Math.min(40, Math.floor(800 / grid[0].length)));
       gridEl.style.gridTemplateColumns = `repeat(${grid[0].length}, ${cellSize}px)`;
 
@@ -473,8 +475,6 @@
           gridEl.appendChild(cell);
         });
       });
-
-      document.addEventListener('mouseup', endSelection);
     }
 
     // Render phrase list
@@ -737,21 +737,27 @@
         const nearMissesEl = document.getElementById('near-misses');
         const claimed = data.phrases.filter(p => p.claimed);
 
-        // Leaderboard
+        // Leaderboard (with safe HTML escaping)
         if (claimed.length === 0) {
-          leaderboardEl.innerHTML = '<div style="opacity: 0.6; text-align: center;">No claims yet. Be first!</div>';
+          leaderboardEl.textContent = 'No claims yet. Be first!';
+          leaderboardEl.style.opacity = '0.6';
+          leaderboardEl.style.textAlign = 'center';
         } else {
-          leaderboardEl.innerHTML = claimed
-            .sort((a, b) => new Date(a.claimedAt) - new Date(b.claimedAt))
-            .map((p, idx) => `
+          const sorted = claimed.sort((a, b) => new Date(a.claimedAt) - new Date(b.claimedAt));
+          leaderboardEl.innerHTML = sorted
+            .map((p, idx) => {
+              const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '🏅';
+              const escapedName = escapeHtml(p.claimedBy);
+              const escapedPhrase = escapeHtml(p.phrase);
+              return `
               <div class="leaderboard-item ${idx === 0 ? 'winner' : ''}">
-                <span>${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '🏅'} ${p.claimedBy}</span>
-                <span>${p.phrase}</span>
-              </div>
-            `).join('');
+                <span>${medal} ${escapedName}</span>
+                <span>${escapedPhrase}</span>
+              </div>`;
+            }).join('');
         }
 
-        // Near misses - show failed attempts after claim
+        // Near misses - limit to top 5 to prevent memory bloat
         const nearMisses = [];
         data.phrases.forEach(p => {
           if (p.claimed && p.attempts && p.attempts.length > 1) {
@@ -767,29 +773,47 @@
                 phrase: p.phrase,
                 winner: winner.playerName,
                 loser: loser.playerName,
-                missedBy: diffSec,
-                timestamp: loser.timestamp
+                missedBy: diffSec
               });
             });
           }
         });
 
         if (nearMisses.length === 0) {
-          nearMissesEl.innerHTML = '<div style="text-align: center; opacity: 0.5;">No near misses yet</div>';
+          nearMissesEl.textContent = 'No near misses yet';
+          nearMissesEl.style.textAlign = 'center';
+          nearMissesEl.style.opacity = '0.5';
         } else {
-          nearMissesEl.innerHTML = nearMisses
+          // Only show top 5 to limit DOM size
+          const topMisses = nearMisses
             .sort((a, b) => parseFloat(a.missedBy) - parseFloat(b.missedBy))
-            .slice(0, 5)
-            .map(m => `
+            .slice(0, 5);
+
+          nearMissesEl.innerHTML = topMisses
+            .map(m => {
+              const loser = escapeHtml(m.loser);
+              const phrase = escapeHtml(m.phrase);
+              const winner = escapeHtml(m.winner);
+              return `
               <div style="padding: 8px; margin: 4px 0; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                <strong>${m.loser}</strong> missed <strong>${m.phrase}</strong> by <strong>${m.missedBy}s</strong>
-                <div style="font-size: 0.85em; opacity: 0.7;">(${m.winner} got it first)</div>
-              </div>
-            `).join('');
+                <strong>${loser}</strong> missed <strong>${phrase}</strong> by <strong>${m.missedBy}s</strong>
+                <div style="font-size: 0.85em; opacity: 0.7;">(${winner} got it first)</div>
+              </div>`;
+            }).join('');
         }
       } catch (error) {
         console.error('Error loading leaderboard:', error);
       }
+    }
+
+    // Helper to prevent XSS
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     // Copy command to clipboard
@@ -815,6 +839,9 @@
         btn.classList.remove('copied');
       }, 2000);
     }
+
+    // Setup mouseup listener once
+    document.addEventListener('mouseup', endSelection);
 
     // Auto-refresh leaderboard
     setInterval(loadLeaderboard, 5000);
