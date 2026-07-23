@@ -197,15 +197,7 @@ function handleRequest(req, res) {
           return;
         }
 
-        // Check for replay attack (before checking if claimed)
-        if (gameState.isReplay(publicId, validation)) {
-          gameState.recordFailedAttempt(publicId, playerName, 'replay_attack');
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Replay attack detected' }));
-          return;
-        }
-
-        // Check if already claimed
+        // Check if already claimed (do this BEFORE replay check)
         if (gameState.isClaimed(publicId)) {
           const phrases = gameState.getAllPhrases();
           const claimed = phrases.find(p => p.phrase === publicId);
@@ -234,6 +226,14 @@ function handleRequest(req, res) {
             unclaimedCount: unclaimed.length,
             keepPlaying: unclaimed.length > 0
           }));
+          return;
+        }
+
+        // Check for replay attack (only for unclaimed phrases)
+        if (gameState.isReplay(publicId, validation)) {
+          gameState.recordFailedAttempt(publicId, playerName, 'replay_attack');
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Replay attack detected' }));
           return;
         }
 
