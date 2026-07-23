@@ -406,7 +406,8 @@
   </div>
 
   <script>
-    const API_URL = 'http://localhost:3000';
+    // Auto-detect API URL - works locally and on deployed servers
+    const API_URL = window.location.origin;
     let gridData = null;
     let phrases = [];
     let selectedCells = [];
